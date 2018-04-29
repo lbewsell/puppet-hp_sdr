@@ -1,3 +1,9 @@
+## Not yet released - Release 0.9.7
+
+### Summary
+
+- GPG key update for packages published after 2015.
+
 ## 2016-07-26 - Release 0.9.6
 
 ### Summary
