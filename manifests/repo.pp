@@ -20,8 +20,10 @@ define hp_sdr::repo (
     fail("Invalid ensure state: ${ensure}")
   }
 
-  class { 'hp_sdr::keys':
-    stage => $keys_stage,
+  if ! defined( Class['hp_sdr::keys'] ) {
+    class { 'hp_sdr::keys':
+      stage => $keys_stage,
+    }
   }
 
   $_url = inline_template("${url_base}/${url_repo}")
