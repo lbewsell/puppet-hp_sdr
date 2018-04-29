@@ -41,18 +41,18 @@ class hp_sdr::keys (
 
     debian,ubuntu: {
       apt::key { 'hpPublicKey1':
-        key         => $gpg_key1_id,
-        key_content => $gpg_key1,
+        id      => $gpg_key1_id,
+        content => $gpg_key1,
       }
 
       apt::key { 'hpPublicKey2':
-        key         => $gpg_key2_id,
-        key_content => $gpg_key2,
+        id      => $gpg_key2_id,
+        content => $gpg_key2,
       }
 
       apt::key { 'hpPublicKey3':
-        key         => $gpg_key3_id,
-        key_content => $gpg_key3,
+        id      => $gpg_key3_id,
+        content => $gpg_key3,
       }
 
       apt::key { 'hpPublicKey4':

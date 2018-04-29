@@ -60,12 +60,11 @@ define hp_sdr::repo (
 
     debian: {
       apt::source { $_name:
-        ensure      => $ensure,
-        location    => $_url,
-        release     => "${release}/${project_ver}",
-        repos       => 'non-free',
-        include_src => false,
-        require     => Class['hp_sdr::keys'],
+        ensure   => $ensure,
+        location => $_url,
+        release  => "${release}/${project_ver}",
+        repos    => 'non-free',
+        require  => Class['hp_sdr::keys'],
       }
     }
 
