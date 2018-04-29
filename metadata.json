@@ -8,13 +8,22 @@
   "project_page": "https://github.com/vholer/puppet-hp_sdr",
   "issues_url": "https://github.com/vholer/puppet-hp_sdr/issues",
   "dependencies": [
-    {"name":"puppetlabs/stdlib","version_requirement":">= 4.0.0"},
-    {"name":"puppetlabs/apt","version_requirement":">= 2.0.0"},
-    {"name":"ceritsc/yum","version_requirement":">= 0.9.0"},
-    {"name":"darin/zypprepo","version_requirement":">= 1.0.1"}
-  ],
-  "tags": [
-    "hp_sdr"
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.0.0"
+    },
+    {
+      "name": "puppetlabs/apt",
+      "version_requirement": ">= 2.0.0"
+    },
+    {
+      "name": "ceritsc/yum",
+      "version_requirement": ">= 0.9.0"
+    },
+    {
+      "name": "darin/zypprepo",
+      "version_requirement": ">= 1.0.1"
+    }
   ],
   "operatingsystem_support": [
     {
@@ -51,5 +60,11 @@
       "name": "puppet",
       "version_requirement": "3.0"
     }
-  ]
+  ],
+  "tags": [
+    "hp_sdr"
+  ],
+  "pdk-version": "1.4.1",
+  "template-url": "file:///opt/puppetlabs/pdk/share/cache/pdk-templates.git",
+  "template-ref": "1.4.1-0-g52adbbb"
 }
