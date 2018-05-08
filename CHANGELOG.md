@@ -1,8 +1,8 @@
-## Not yet released - Release 0.9.7
-
-### Summary
+## 2018-05-09 - Release 1.0.0
 
 - GPG key update for packages published after 2015.
+- Code update for Puppet 4/5
+- Added tests
 
 ## 2016-07-26 - Release 0.9.6
 

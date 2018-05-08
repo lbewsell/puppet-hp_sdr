@@ -9,17 +9,17 @@ This module configures client for
 
 Module has been tested on:
 
-* Puppet 3.0
+* Puppet 5.5.1
 * OS:
-  * RHEL 6
-  * Debian 7
+  * RHEL/CentOS 7
+  * Debian 8, 9
 
 Required modules:
 
-* apt (https://github.com/puppetlabs/puppetlabs-apt)
-* yum (https://github.com/CERIT-SC/puppet-yum)
-* zypprepo (https://github.com/deadpoint/puppet-zypprepo)
-* stdlib (https://github.com/puppetlabs/puppetlabs-stdlib)
+* [puppetlabs-stdlib](https://forge.puppet.com/puppetlabs/stdlib)
+* [puppetlabs-apt](https://forge.puppet.com/puppetlabs/apt)
+* [puppet-yum](https://forge.puppet.com/puppet/yum)
+* [puppet-zypprepo](https://forge.puppet.com/puppet/zypprepo)
 
 # Quick Start
 
@@ -49,18 +49,20 @@ Full configuration options:
 
 ```puppet
 class { 'hp_sdr::spp':
-  ensure      => present|absent,  # ensure state
-  keys_stage  => main,            # run stage for hp_sdr::gpgkeys
-  gpgcheck    => 1|0,             # check GPG signatures
-  dist        => '...',           # OS code name
-  release     => '...',           # OS version
-  arch        => '...',           # OS architecture
-  project_ver => 'current',       # HP bundle version
-  url_base    => '...',           # URL base part
-  url_repo    => '...',           # URL repo. specific part
+  ensure   => present|absent,  # ensure state
+  gpgcheck => true|false,      # check GPG signatures
+  dist     => '...',           # OS code name
+  release  => '...',           # OS version
+  arch     => '...',           # OS architecture
+  version  => 'current',       # HP bundle version
+  url_base => '...',           # URL base part
+  url_repo => '...',           # URL repo. specific part
 }
 ```
 
 # Contributors
 
 * Håkon Heggernes Lerring <hakon@powow.no>
+* Siebrand Mazeland <siebrand@kitano.nl>
+* Kim Jahn <kim@maisspace.org>
+* Jonathan Araña Cruz <jonhattan@faita.net>
