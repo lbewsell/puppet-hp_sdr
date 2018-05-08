@@ -1,77 +1,101 @@
+# hp_sdr::params
+#
+# Private class with module parameters.
+#
+# @summary Private class with module parameters.
 class hp_sdr::params {
-  $stage = main
+  # check for HP hardware
+  unless ($facts['dmi']['manufacturer'] == 'HP') {
+    fail("Unsupported manufacturer: ${facts['dmi']['manufacturer']}")
+  }
+
   $ensure = present
-  $gpgcheck = 1
+  $version = 'current'
+  $url_base = 'http://downloads.linux.hpe.com/SDR/repo'
+  $gpgcheck = true
 
   # http://downloads.linux.hp.com/SDR/keys.html
-  $gpg_key1 = template('hp_sdr/hpPublicKey1024.pub.erb')
-  $gpg_key1_id = 'FB410E68CEDF95D066811E95527BC53A2689B887'
-  $gpg_key2 = template('hp_sdr/hpPublicKey2048.pub.erb')
-  $gpg_key2_id = '476DADAC9E647EE27453F2A3B070680A5CE2D476'
-  $gpg_key3 = template('hp_sdr/hpPublicKey2048_key1.pub.erb')
-  $gpg_key3_id = '882F7199B20F94BD7E3E690EFADD8D64B1275EA3'
-  $gpg_key4 = template('hp_sdr/hpePublicKey2048_key1.pub.erb')
-  $gpg_key4_id = '57446EFDE098E5C934B69C7DC208ADDE26C2B797'
+  $_keys = {
+    'hpPublicKey1'  => {
+      'id'  => 'FB410E68CEDF95D066811E95527BC53A2689B887',
+      'key' => epp('hp_sdr/hpPublicKey1024.pub.epp'),
+    },
+    'hpPublicKey2'  => {
+      'id'  => '476DADAC9E647EE27453F2A3B070680A5CE2D476',
+      'key' => epp('hp_sdr/hpPublicKey2048.pub.epp'),
+    },
+    'hpPublicKey3'  => {
+      'id'  => '882F7199B20F94BD7E3E690EFADD8D64B1275EA3',
+      'key' => epp('hp_sdr/hpPublicKey2048_key1.pub.epp'),
+    },
+    'hpePublicKey4' =>  {
+      'id'  => '57446EFDE098E5C934B69C7DC208ADDE26C2B797',
+      'key' => epp('hp_sdr/hpePublicKey2048_key1.pub.epp'),
+    }
+  }
 
-  $project_ver = 'current'
-  $url_base = 'http://downloads.linux.hpe.com/SDR/repo'
+  case $facts['os']['family'] {
+    'RedHat': {
+      $_keys_paths = {
+        'hpPublicKey1'  => { 'path' => '/etc/pki/rpm-gpg/RPM-GPG-KEY-hpPublicKey1', },
+        'hpPublicKey2'  => { 'path' => '/etc/pki/rpm-gpg/RPM-GPG-KEY-hpPublicKey2', },
+        'hpPublicKey3'  => { 'path' => '/etc/pki/rpm-gpg/RPM-GPG-KEY-hpPublicKey3', },
+        'hpePublicKey4' => { 'path' => '/etc/pki/rpm-gpg/RPM-GPG-KEY-hpePublicKey1', },
+      }
 
-  case $::osfamily {
-    redhat: {
-      $gpg_key1_path = '/etc/pki/rpm-gpg/RPM-GPG-KEY-hpPublicKey1'
-      $gpg_key2_path = '/etc/pki/rpm-gpg/RPM-GPG-KEY-hpPublicKey2'
-      $gpg_key3_path = '/etc/pki/rpm-gpg/RPM-GPG-KEY-hpPublicKey3'
-      $gpg_key4_path = '/etc/pki/rpm-gpg/RPM-GPG-KEY-hpePublicKey1'
-
-      $url_repo = '<%= @bundle %>/<%= @dist %>/<%= @release %>/<%= @arch %>/<%= @project_ver %>'
+      $url_repo = '<%= $bundle %>/<%= $dist %>/<%= $release %>/<%= $arch %>/<%= $version %>'
       $arch = '$basearch'
       $release = '$releasever'
 
-      case $::operatingsystem {
-        redhat,centos:  { $dist = downcase($::operatingsystem) }
-        scientific,slc: { $dist = 'centos' }
-        oraclelinux:    { $dist = 'oracle' }
-        default:        { fail("Unsupported OS: ${::operatingsystem}") }
+      case $facts['os']['name'] {
+        'RedHat', 'CentOS': { $dist = downcase($facts['os']['name']) }
+        'Scientific':       { $dist = 'centos' }
+        'OracleLinux':      { $dist = 'oracle' }
+        default:            { fail("Unsupported OS: ${facts['os']['name']}") }
       }
     }
 
-    suse: {
-      $gpg_key1_path = '/etc/pki/RPM-GPG-KEY-hpPublicKey1'
-      $gpg_key2_path = '/etc/pki/RPM-GPG-KEY-hpPublicKey2'
-      $gpg_key3_path = '/etc/pki/RPM-GPG-KEY-hpPublicKey3'
-      $gpg_key4_path = '/etc/pki/RPM-GPG-KEY-hpePublicKey1'
+    'Suse': {
+      $_keys_paths = {
+        'hpPublicKey1'  => { 'path' => '/etc/pki/RPM-GPG-KEY-hpPublicKey1', },
+        'hpPublicKey2'  => { 'path' => '/etc/pki/RPM-GPG-KEY-hpPublicKey2', },
+        'hpPublicKey3'  => { 'path' => '/etc/pki/RPM-GPG-KEY-hpPublicKey3', },
+        'hpePublicKey4' => { 'path' => '/etc/pki/RPM-GPG-KEY-hpePublicKey1', },
+      }
 
-      $url_repo = '<%= @bundle %>/suse/<%= @release %>/<%= @arch %>/<%= @project_ver %>'
-      $arch = $::architecture
+      $url_repo = '<%= $bundle %>/suse/<%= $release %>/<%= $arch %>/<%= $version %>'
+      $arch = pick(fact('os.architecture'), $::architecture)
+      $dist = ''
 
-      case $::operatingsystem {
-        sles,sled: {
-          $version = regsubst($::operatingsystemrelease, '\.', '-SP')
-          $release = "SLES${version}"
+      case $facts['os']['name'] {
+        'SLES', 'SLED': {
+          $_suse_version = regsubst($facts['os']['release']['full'], '\.', '-SP')
+          $release = "SLES${_suse_version}"
         }
 
         default: {
-          fail("Unsupported OS: ${::operatingsystem}")
+          fail("Unsupported OS: ${facts['os']['name']}")
         }
       }
     }
 
-    debian: {
-      $url_repo = '<%= @bundle %>'
-      $release = $::lsbdistcodename
+    'Debian': {
+      $_keys_paths = { }
 
-      unless $::operatingsystem in ['Debian','Ubuntu'] {
-        fail("Unsupported OS: ${::operatingsystem}")
+      $url_repo = '<%= $bundle %>'
+      $arch = ''
+      $dist = ''
+      $release = pick(fact('os.distro.codename'), $::lsbdistcodename)
+
+      unless $facts['os']['name'] in ['Debian', 'Ubuntu'] {
+        fail("Unsupported OS: ${facts['os']['name']}")
       }
     }
 
     default: {
-      fail("Unsupported OS family: ${::osfamily}")
+      fail("Unsupported OS family: ${facts['os']['family']}")
     }
   }
 
-  # check for HP hardware
-  unless $::manufacturer == 'HP' {
-    fail("Unsupported manufacturer: ${::manufacturer}")
-  }
+  $keys = deep_merge($_keys, $_keys_paths)
 }

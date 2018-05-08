@@ -1,48 +1,59 @@
+# hp_sdr::repo
+#
+# Defined resource to manage HP repository configuration.
+#
+# @summary Manage HP repository configuration.
+#
+# @param dist Distribution.
+# @param release Release.
+# @param arch Architecture.
+# @param version Repository release version.
+# @param url_base Base URL.
+# @param url_repo Repository specific part of URL.
+# @param bundle Repository name (defaults to $title)
+# @param ensure Ensure state.
+# @param gpgcheck GPG checking.
+#
+# @example
+#   hp_sdr::repo { 'mcp':
+#     ensure   => present,
+#     dist     => 'centos',
+#     release  => '$releasever',
+#     arch     => '$arch',
+#     version  => 'current',
+#     url_base => 'http://downloads.linux.hpe.com/SDR/repo',
+#     url_repo => '<%= $bundle %>/<%= $dist %>/<%= $release %>/<%= $arch %>/<%= $version %>',
+#     gpgcheck => true,
+#   }
 define hp_sdr::repo (
-  $dist,
-  $release,
-  $arch,
-  $project_ver,
-  $url_base,
-  $url_repo,
-  $bundle     = $title,
-  $keys_stage = main,
-  $ensure     = present,
-  $gpgcheck   = 1
+  String $dist,
+  String $release,
+  String $arch,
+  String[1] $version,
+  String[1] $url_base,
+  String[1] $url_repo,
+  String[1] $bundle                 = $title,
+  Enum['present', 'absent'] $ensure = present,
+  Boolean $gpgcheck                 = true
 ) {
-  validate_string($release, $project_ver, $url_base, $url_repo, $bundle)
+  require hp_sdr::keys
 
-  unless $gpgcheck in [0,1] {
-    fail("Invalid \$gpgcheck value: ${gpgcheck}")
-  }
-
-  unless $ensure in [present,absent] {
-    fail("Invalid ensure state: ${ensure}")
-  }
-
-  if ! defined( Class['hp_sdr::keys'] ) {
-    class { 'hp_sdr::keys':
-      stage => $keys_stage,
-    }
-  }
-
-  $_url = inline_template("${url_base}/${url_repo}")
+  $_url = inline_epp("${url_base}/${url_repo}")
   $_name = "HP-${bundle}"
   $_descr = "HP Software Delivery Repository for ${bundle}"
 
-  case $::osfamily {
-    redhat: {
+  case $facts['os']['family'] {
+    'RedHat': {
       yumrepo { $_name:
         ensure   => $ensure,
         enabled  => 1,
-        gpgcheck => $gpgcheck,
+        gpgcheck => bool2num($gpgcheck),
         descr    => $_descr,
         baseurl  => $_url,
-        require  => Class['hp_sdr::keys'],
       }
     }
 
-    suse: {
+    'Suse': {
       $_enabled = $ensure ? {
         present => 1,
         default => absent,
@@ -50,28 +61,27 @@ define hp_sdr::repo (
 
       zypprepo { $_name:
         enabled      => $_enabled,
-        gpgcheck     => $gpgcheck,
+        gpgcheck     => bool2num($gpgcheck),
         descr        => $_descr,
         baseurl      => $_url,
         type         => 'rpm-md',
         autorefresh  => 1,
         keeppackages => 0,
-        require  => Class['hp_sdr::keys'],
       }
     }
 
-    debian: {
+    'Debian': {
       apt::source { $_name:
-        ensure   => $ensure,
-        location => $_url,
-        release  => "${release}/${project_ver}",
-        repos    => 'non-free',
-        require  => Class['hp_sdr::keys'],
+        ensure         => $ensure,
+        allow_unsigned => ! $gpgcheck,
+        location       => $_url,
+        release        => "${release}/${version}",
+        repos          => 'non-free',
       }
     }
 
     default: {
-      fail("Unsupported OS: ${::operatingsystem}")
+      fail("Unsupported OS family: ${facts['os']['family']}")
     }
   }
 }
