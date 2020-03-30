@@ -5,7 +5,7 @@
 # @summary Private class with module parameters.
 class hp_sdr::params {
   # check for HP hardware
-  unless ($facts['dmi']['manufacturer'] == 'HP') {
+  unless ($facts['dmi']['manufacturer'] =~ /^(HP|HPE)$/) {
     fail("Unsupported manufacturer: ${facts['dmi']['manufacturer']}")
   }
 
