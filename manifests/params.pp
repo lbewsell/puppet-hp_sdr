@@ -48,10 +48,11 @@ class hp_sdr::params {
       $release = '$releasever'
 
       case $facts['os']['name'] {
-        'RedHat', 'CentOS', 'Rocky': { $dist = downcase($facts['os']['name']) }
-        'Scientific':                { $dist = 'centos' }
-        'OracleLinux':               { $dist = 'oracle' }
-        default:                     { fail("Unsupported OS: ${facts['os']['name']}") }
+        'RedHat', 'CentOS': { $dist = downcase($facts['os']['name']) }
+        'Rocky':            { $dist = 'Rocky' }
+        'Scientific':       { $dist = 'centos' }
+        'OracleLinux':      { $dist = 'oracle' }
+        default:            { fail("Unsupported OS: ${facts['os']['name']}") }
       }
     }
 
